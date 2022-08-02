@@ -1,10 +1,11 @@
 package com.psl.employeeinfo.controller;
 
-import com.psl.employeeinfo.exception.CustomException;
 import com.psl.employeeinfo.model.Employee;
 import com.psl.employeeinfo.service.EmployeeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -16,8 +17,6 @@ public class EmployeeController {
     @Autowired
     private EmployeeService employeeService;
 
-    CustomException customException;
-
     @GetMapping("/employee")
     private List<Employee> getAllEmployee(){
         return employeeService.getAllEmployee();
@@ -28,8 +27,7 @@ public class EmployeeController {
         if(employeeService.getEmployeeById(emp_id).getEmp_id() != "PSL000"){
             return employeeService.getEmployeeById(emp_id);
         }else{
-            customException = new CustomException(404,"No such Employee Id present in database");
-            return customException;
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No such employee id present in database!");
         }
     }
 
@@ -38,22 +36,17 @@ public class EmployeeController {
         try{
             if(emp.getEmp_id().startsWith("PSL")){
                 if(employeeService.getEmployeeById(emp.getEmp_id()).getEmp_id() == emp.getEmp_id()) {
-                    customException = new CustomException(409,"Data with Id "+emp.getEmp_id()+" already in database!");
-                    return customException;
+                    return ResponseEntity.status(HttpStatus.CONFLICT).body("Data with Id "+emp.getEmp_id()+" already in database!");
                 }else{
                     employeeService.saveEmployee(emp);
                 }
             }else{
-                customException = new CustomException(400,"Invalid Employee Id - The format of Id should be like PSL101");
-                return customException;
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid Employee Id - The format of Id should be like PSL101");
             }
         }catch(Exception e){
-            customException = new CustomException(400,"Employee Record is not Saved");
-            return customException;
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Employee Record is not Saved");
         }
-
-        customException = new CustomException(201,"Employee "+emp.getEmp_id()+" details added successfully");
-        return customException;
+        return ResponseEntity.status(HttpStatus.CREATED).body("Employee "+emp.getEmp_id()+" details added successfully");
     }
 
     @PutMapping("/employee")
@@ -61,19 +54,20 @@ public class EmployeeController {
         Employee empRec;
         try{
             empRec = employeeService.getEmployeeById(emp.getEmp_id());
-            if((empRec.getEmp_name().equals(emp.getEmp_name()))&&
-                    (empRec.getEmp_profile().equals(emp.getEmp_profile()))&&
-                    (empRec.getEmp_salary() == emp.getEmp_salary())){
-                customException = new CustomException(409,"No Change in the Data!");
-                return customException;
+            if(empRec.getEmp_id().equals(emp.getEmp_id())) {
+                if ((empRec.getEmp_name().equals(emp.getEmp_name())) &&
+                        (empRec.getEmp_profile().equals(emp.getEmp_profile())) &&
+                        (empRec.getEmp_salary() == emp.getEmp_salary())) {
+                    return ResponseEntity.status(HttpStatus.CONFLICT).body("No Change in the Data!");
+                } else {
+                    employeeService.updateEmployee(emp);
+                    return ResponseEntity.status(HttpStatus.NO_CONTENT).body("Resource updated Successfully!");
+                }
             }else{
-                employeeService.updateEmployee(emp);
-                customException = new CustomException(204,"Resource updated Successfully!");
-                return customException;
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No such Employee Id present in database");
             }
         }catch(NoSuchElementException e) {
-            customException = new CustomException(404,"No such Employee Id present in database");
-            return customException;
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No such Employee Id present in database");
         }
     }
 
@@ -81,11 +75,9 @@ public class EmployeeController {
     private Object deleteEmployeeById(@PathVariable("emp_id") String emp_id){
         try{
             employeeService.deleteEmployeeById(emp_id);
-            customException = new CustomException(204,"Employee Id "+emp_id+" Deleted Successfully!");
-            return customException;
+            return ResponseEntity.status(HttpStatus.NO_CONTENT).body("Employee Id "+emp_id+" Deleted Successfully!");
         }catch(EmptyResultDataAccessException e){
-            customException = new CustomException(404,"Employee Id Not In Database!");
-            return customException;
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Employee Id Not In Database!");
         }
 
     }
@@ -94,11 +86,9 @@ public class EmployeeController {
     private Object deleteAllEmployee(){
         try{
             employeeService.deleteAllEmployee();
-            customException = new CustomException(204,"Employees are Deleted Successfully!");
-            return customException;
+            return ResponseEntity.status(HttpStatus.NO_CONTENT).body("Employees are Deleted Successfully!");
         }catch(Exception e){
-            customException = new CustomException(410,"Unable to delete Data");
-            return customException;
+            return ResponseEntity.status(HttpStatus.GONE).body("Unable to delete Data");
         }
     }
 }
