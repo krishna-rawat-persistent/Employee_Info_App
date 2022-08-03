@@ -75,7 +75,7 @@ public class EmployeeController {
     private Object deleteEmployeeById(@PathVariable("emp_id") String emp_id){
         try{
             employeeService.deleteEmployeeById(emp_id);
-            return ResponseEntity.status(HttpStatus.NO_CONTENT).body("Employee Id "+emp_id+" Deleted Successfully!");
+            return ResponseEntity.status(HttpStatus.OK).body("Employee Id "+emp_id+" Deleted Successfully!");
         }catch(EmptyResultDataAccessException e){
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Employee Id Not In Database!");
         }
