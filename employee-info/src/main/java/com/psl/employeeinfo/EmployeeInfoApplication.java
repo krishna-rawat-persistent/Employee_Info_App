@@ -11,7 +11,7 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2;
 
 @SpringBootApplication
 @EnableSwagger2
-public class EmployeeInfoApplication {
+public class EmployeeInfoApplication{
 
 	public static void main(String[] args) {
 		SpringApplication.run(EmployeeInfoApplication.class, args);
@@ -31,5 +31,4 @@ public class EmployeeInfoApplication {
 					.paths(PathSelectors.any())
 					.build();
 		}
-
-	}
+}
