@@ -18,7 +18,11 @@ public class EmployeeService {
     }
 
     public Employee getEmployeeById(String emp_id){
-        return employeeRepository.findById(emp_id).orElse(new Employee("PSL000","abc","xyz",123));
+        try {
+            return employeeRepository.findById(emp_id).get();
+        }catch (Exception e){
+            return new Employee("PSL000","temp","temp",0);
+        }
     }
 
     public Employee saveEmployee(Employee emp){
@@ -33,7 +37,7 @@ public class EmployeeService {
         return employeeRepository.save(emp);
     }
 
-    public  void deleteAllEmployee(){
+    public void deleteAllEmployee(){
         employeeRepository.deleteAll();
     }
 
